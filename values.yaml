@@ -1,0 +1,91 @@
+# Default values for cca-sample-frontend.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+name: spring-petclinic
+domain: costaisa.org
+domainNamespace: appsint
+
+nameSuffix: ignore
+envBase: int
+  
+  
+spring_petclinic_rest:
+  name: spring-petclinic-rest
+  forceRedeployment: false  
+  image:
+    repository: jbravo/spring-petclinic-rest
+    tag: 3.2.1
+    pullPolicy: Always 
+  service:
+    type: NodePort
+    port: 9966
+  config:
+    name: petclinic-rest.properties
+  livenessProbe:
+    enabled: false
+    initialDelaySeconds: 180
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 6
+  readinessProbe:
+    enabled: false
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3           
+  resources:
+     limits: {}
+    #   cpu: 1000m
+    #   memory: 768Mi
+     requests: {}
+    #   cpu: 100m
+    #   memory: 256Mi
+  extraEnv:        
+    JAVA_OPTS: -Xmx512M
+    spring.profiles.active: postgresql,spring-data-jpa
+    spring.datasource.url: jdbc:postgresql://amcdocker.costaisa.org:5432/petclinic
+    spring.datasource.username: postgres
+    spring.datasource.password: petclinic    
+  envVarsFromSecret: {}
+    #KEYCLOAK_SECRET:
+    # secretKeyRef: spring-petclinic-keycloak-secret
+    # key: secret
+    #MARIADB_USERNAME:
+    # secretKeyRef: spring-petclinic-mariadb-secret
+    # key: username     
+    #MARIADB_PASSWORD:
+    # secretKeyRef: spring-petclinic-mariadb-secret
+    # key: password
+    #FUSEKI_CLIENT_USERNAME:
+    # secretKeyRef: spring-petclinic-rdf-server-hcb-secret
+    # key: username     
+    #FUSEKI_CLIENT_PASSWORD:
+    # secretKeyRef: spring-petclinic-rdf-server-hcb-secret
+    # key: password
+  replicaCount: 1 
+
+spring_petclinic_frontend:
+  name: spring-petclinic-frontend
+  forceRedeployment: false  
+  image:
+    repository: jbravo/spring-petclinic-angular
+    tag: 0.2.0
+    pullPolicy: Always
+  service:
+    type: NodePort
+    port: 8080
+  config:
+    name: environment.js    
+  resources:
+     limits:
+       cpu: 300m
+    #   memory: 100Mi
+     requests:
+       cpu: 100m
+       memory: 50Mi        
+  replicaCount: 1   
+
