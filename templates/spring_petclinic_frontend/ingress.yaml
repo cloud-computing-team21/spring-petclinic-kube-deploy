@@ -1,0 +1,25 @@
+{{- $apiIsStable := eq (include "aquacloud.ingress.isStable" .) "true" -}}
+apiVersion: {{ include "aquacloud.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ template "app.spring_petclinic_frontend.name" .}}-ingress  
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: {{ template "app.spring_petclinic_frontend.name" .}}.{{ .Values.domainNamespace }}.{{ .Values.domain }}
+    http:
+      paths:
+      {{- if $apiIsStable }}
+      - backend:
+         service:
+           name: {{ template "app.spring_petclinic_frontend.name" .}}-service
+           port: 
+             number: 8080
+        path: /              
+        pathType: ImplementationSpecific       
+      {{- else }}      
+      - backend:
+         serviceName: {{ template "app.spring_petclinic_frontend.name" .}}-service
+         servicePort: 8080
+      {{- end }} 

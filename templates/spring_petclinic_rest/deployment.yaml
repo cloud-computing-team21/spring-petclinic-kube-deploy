@@ -1,0 +1,85 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "app.spring_petclinic_rest.name" .}}-deployment
+  namespace: {{.Release.Namespace}}  
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "app.spring_petclinic_rest.name" .}}
+  replicas: {{ .Values.spring_petclinic_rest.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "app.spring_petclinic_rest.name" .}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/spring_petclinic_rest/configmap.yaml") . | sha256sum }}
+{{- if .Values.spring_petclinic_rest.forceRedeployment }}       
+        rollme: {{ randAlphaNum 5 | quote }}
+{{- end }}   
+    spec:
+      containers:        
+      - name: {{ template "app.spring_petclinic_rest.name" .}}
+        image: "{{ .Values.spring_petclinic_rest.image.repository }}:{{ .Values.spring_petclinic_rest.image.tag }}"
+        imagePullPolicy: Always 
+{{- if .Values.spring_petclinic_rest.resources }}         
+        resources:
+{{ toYaml .Values.spring_petclinic_rest.resources | indent 10 }}
+{{- end }}              
+        ports:
+        - containerPort: 8080
+          {{- if .Values.spring_petclinic_rest.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /version
+            port: 8080
+          initialDelaySeconds: {{ .Values.spring_petclinic_rest.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.spring_petclinic_rest.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.spring_petclinic_rest.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.spring_petclinic_rest.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.spring_petclinic_rest.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.spring_petclinic_rest.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /version
+            port: 8080
+          initialDelaySeconds: {{ .Values.spring_petclinic_rest.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.spring_petclinic_rest.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.spring_petclinic_rest.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.spring_petclinic_rest.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.spring_petclinic_rest.readinessProbe.failureThreshold }}
+        {{- end }}
+        volumeMounts:
+        - name: {{ template "app.spring_petclinic_rest.name" .}}-config-volume
+          mountPath: /{{ .Values.spring_petclinic_rest.config.name }}
+          subPath: {{ .Values.spring_petclinic_rest.config.name }}
+       {{- range $volumeMount := .Values.spring_petclinic_rest.extraVolume }}         
+        - name: {{ $volumeMount.name }}-volume
+          mountPath: /mnt/{{ $volumeMount.name }}
+       {{- end }}         
+        env:
+          - name: DUMMY
+            value: "DUMMY"
+          {{- include "global.configmap" $ | nindent 10 }}  
+          {{- range $key, $value := .Values.spring_petclinic_rest.envVarsFromSecret }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $value.secretKeyRef | quote }}
+                key: {{ $value.key | quote }}
+          {{- end }}
+          {{- range $key, $value := .Values.spring_petclinic_rest.extraEnv }}
+          - name: {{ $key }}
+            value: {{ $value}}
+          {{- end }}            
+      volumes:
+      - name: {{ template "app.spring_petclinic_rest.name" .}}-config-volume
+        configMap:
+         name: {{ template "app.spring_petclinic_rest.name" .}}-configmap 
+      {{- $envBase := .Values.envBase -}}         
+      {{- range $volume := .Values.spring_petclinic_rest.extraVolume }}
+      - name: {{ $volume.name }}-volume
+        persistentVolumeClaim:
+         claimName: {{ $volume.name }}-pvc-{{ $envBase }}     
+      {{- end }}       
