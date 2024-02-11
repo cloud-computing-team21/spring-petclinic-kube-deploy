@@ -47,9 +47,9 @@ spring_petclinic_rest:
   extraEnv:        
     JAVA_OPTS: -Xmx512M
     spring.profiles.active: postgresql,spring-data-jpa
-    spring.datasource.url: jdbc:postgresql://amcdocker.costaisa.org:5432/petclinic
-    spring.datasource.username: postgres
-    spring.datasource.password: petclinic    
+    spring.datasource.url: jdbc:postgresql://xxxxx:5432/petclinic
+    spring.datasource.username: xxxxx
+    spring.datasource.password: xxxxx    
   envVarsFromSecret: {}
     #KEYCLOAK_SECRET:
     # secretKeyRef: spring-petclinic-keycloak-secret
