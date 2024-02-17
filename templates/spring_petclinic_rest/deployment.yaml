@@ -60,8 +60,7 @@ spec:
        {{- end }}         
         env:
           - name: DUMMY
-            value: "DUMMY"
-          {{- include "global.configmap" $ | nindent 10 }}  
+            value: "DUMMY" 
           {{- range $key, $value := .Values.spring_petclinic_rest.envVarsFromSecret }}
           - name: {{ $key }}
             valueFrom:
