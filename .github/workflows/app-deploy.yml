@@ -17,12 +17,14 @@ jobs:
 
     - name: Copy SQL files to Bastion Host
       run: |
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/1-ontopharma-db-user.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/2-audit-schema.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/1-createDB.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/2-initDB.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/3-populateDB.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
 
     - name: Execute SQL files on RDS through Bastion Host
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }} << EOF
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/1-ontopharma-db-user.sql
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/2-audit-schema.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/1-createDB.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/2-initDB.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/3-populateDB.sql
         EOF
