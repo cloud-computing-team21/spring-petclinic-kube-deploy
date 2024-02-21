@@ -36,9 +36,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up Kubernetes context
-      uses: azure/setup-kubectl@v1
-      with:
-        kubeconfig: ${{ secrets.KUBECONFIG }}
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yml
+        echo "KUBECONFIG=${PWD}/kubeconfig.yml" >> $GITHUB_ENV
 
     - name: Install Helm
       run: |
