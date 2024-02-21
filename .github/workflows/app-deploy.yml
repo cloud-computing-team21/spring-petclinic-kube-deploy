@@ -38,6 +38,7 @@ jobs:
     - name: Set up Kubernetes context
       run: |
         echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yml
+        chmod 600 kubeconfig.yml
         echo "KUBECONFIG=${PWD}/kubeconfig.yml" >> $GITHUB_ENV
 
     - name: Install Helm
