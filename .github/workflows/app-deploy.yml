@@ -46,7 +46,7 @@ jobs:
 
     - name: Update kubeconfig
       run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKSCLUSTERNAME }} --region $AWS_REGION
+        aws eks update-kubeconfig --name ${{ secrets.EKSCLUSTERNAME }} --region ${{ secrets.AWSREGION }}
 
 
     - name: Install Helm
