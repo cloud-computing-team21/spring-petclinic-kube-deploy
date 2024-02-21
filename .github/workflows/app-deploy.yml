@@ -28,3 +28,23 @@ jobs:
         PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/2-initDB.sql
         PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/3-populateDB.sql
         EOF
+
+ deploy-helm-chart:
+    needs: setup-db
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Set up Kubernetes context
+      uses: azure/setup-kubectl@v1
+      with:
+        kubeconfig: ${{ secrets.KUBECONFIG }}
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    - name: Deploy Helm chart
+      run: |
+        helm upgrade --install petclinic ./ --values ./values.yaml
