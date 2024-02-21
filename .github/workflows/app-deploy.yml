@@ -35,11 +35,19 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
 
-    - name: Set up Kubernetes context
+
+    - name: Configure AWS CLI
       run: |
-        echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yml
-        chmod 600 kubeconfig.yml
-        echo "KUBECONFIG=${PWD}/kubeconfig.yml" >> $GITHUB_ENV
+        echo "${{ secrets.AWSCREDS }}" > awscreds.ini
+        export AWS_ACCESS_KEY_ID=$(awk -F "=" '/aws_access_key_id/ {print $2}' awscreds.ini)
+        export AWS_SECRET_ACCESS_KEY=$(awk -F "=" '/aws_secret_access_key/ {print $2}' awscreds.ini)
+        export AWS_SESSION_TOKEN=$(awk -F "=" '/aws_session_token/ {print $2}' awscreds.ini)
+        export AWS_REGION=${{ secrets.AWSREGION }}
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig --name ${{ secrets.EKSCLUSTERNAME }} --region $AWS_REGION
+
 
     - name: Install Helm
       run: |
