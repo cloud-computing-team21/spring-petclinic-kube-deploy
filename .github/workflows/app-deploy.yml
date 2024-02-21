@@ -28,8 +28,7 @@ jobs:
         PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/2-initDB.sql
         PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/3-populateDB.sql
         EOF
-
- deploy-helm-chart:
+  deploy-helm-chart:
     needs: setup-db
     runs-on: ubuntu-latest
     steps:
