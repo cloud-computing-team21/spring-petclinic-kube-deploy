@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: petclinic-ingress
+  namespace: {{.Release.Namespace}} 
+  #annotations:
+    #nginx.org/rewrites: "serviceName=spring-petclinic-frontend-service rewrite=/petclinic/"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "app.spring_petclinic_frontend.name" .}}-service 
+            port:
+              number: 8080
+      - path: /petclinic/api
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "app.spring_petclinic_rest.name" .}}-service
+            port:
+              number: 9966
+  tls:
+  - hosts:
+    - a4c3e1354b8c84877a692c035b94ca27-650553475.us-east-1.elb.amazonaws.com
+    secretName: petclinic-cert

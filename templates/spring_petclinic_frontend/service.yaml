@@ -6,6 +6,7 @@ spec:
   ports:
     - protocol: TCP
       port: {{ .Values.spring_petclinic_frontend.service.port }}
+      targetPort: {{ .Values.spring_petclinic_frontend.service.targetPort }}
   selector:
     app: {{ template "app.spring_petclinic_frontend.name" .}}
   type: {{ .Values.spring_petclinic_frontend.service.type }}  
