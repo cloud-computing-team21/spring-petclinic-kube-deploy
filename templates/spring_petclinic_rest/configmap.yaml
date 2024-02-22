@@ -3,7 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ template "app.spring_petclinic_rest.name" .}}-configmap 
 data:
-  application.yml: |-
+  application.properties: |-
 {{ .Files.Get (printf "files/spring_petclinic_rest/%s" .Values.spring_petclinic_rest.config.name) | indent 4}} 
-                 
-

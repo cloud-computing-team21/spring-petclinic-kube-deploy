@@ -28,7 +28,14 @@ spec:
         - name: {{ template "app.spring_petclinic_frontend.name" .}}-config-volume
           mountPath: /usr/share/nginx/html/assets/environments/environment.js
           subPath: environment.js
+        volumeMounts:
+        - name: {{ template "app.spring_petclinic_frontend.name" .}}-config-main-volume
+          mountPath: /usr/share/nginx/html/main.js
+          subPath: main.js
       volumes:
       - name: {{ template "app.spring_petclinic_frontend.name" .}}-config-volume
         configMap:
          name: {{ template "app.spring_petclinic_frontend.name" .}}-configmap
+      - name: {{ template "app.spring_petclinic_frontend.name" .}}-config-main-volume
+        configMap:
+         name: {{ template "app.spring_petclinic_frontend.name" .}}-configmap-main

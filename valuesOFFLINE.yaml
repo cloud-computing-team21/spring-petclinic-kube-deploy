@@ -44,9 +44,9 @@ spring_petclinic_rest:
   extraEnv:        
     JAVA_OPTS: -Xmx512M
     spring.profiles.active: postgresql,spring-data-jpa
-    spring.datasource.url: jdbc:postgresql://rds-master.croaguqyspld.us-east-1.rds.amazonaws.com:5432/petclinic
+    spring.datasource.url: jdbc:postgresql://postgres-postgresql.oriolns.svc.cluster.local:5432/petclinic
     spring.datasource.username: postgres
-    spring.datasource.password: petclinic 
+    spring.datasource.password: 0zHPOlmBSC 
   replicaCount: 1 
 
 spring_petclinic_frontend:

@@ -52,7 +52,7 @@ spec:
         {{- end }}
         volumeMounts:
         - name: {{ template "app.spring_petclinic_rest.name" .}}-config-volume
-          mountPath: /{{ .Values.spring_petclinic_rest.config.name }}
+          mountPath: /app/resources/{{ .Values.spring_petclinic_rest.config.name }}
           subPath: {{ .Values.spring_petclinic_rest.config.name }}
        {{- range $volumeMount := .Values.spring_petclinic_rest.extraVolume }}         
         - name: {{ $volumeMount.name }}-volume
