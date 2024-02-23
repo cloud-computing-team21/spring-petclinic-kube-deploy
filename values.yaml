@@ -43,18 +43,18 @@ spring_petclinic_rest:
     #   memory: 256Mi
   extraEnv:        
     JAVA_OPTS: -Xmx512M
-    spring.profiles.active: postgresql,spring-data-jpa
-    spring.datasource.url: jdbc:postgresql://rds-master.croaguqyspld.us-east-1.rds.amazonaws.com:5432/petclinic
-    spring.datasource.username: postgres
-    spring.datasource.password: petclinic 
+    spring.profiles.active: hsqldb,spring-data-jpa
+    #spring.datasource.url: jdbc:postgresql://rds-master.croaguqyspld.us-east-1.rds.amazonaws.com:5432/petclinic
+    #spring.datasource.username: postgres
+    #spring.datasource.password: petclinic 
   replicaCount: 1 
 
 spring_petclinic_frontend:
   name: spring-petclinic-frontend
   forceRedeployment: false  
   image:
-    repository: oriol366/spring-petclinic-angular
-    tag: latest
+    repository: jbravo/spring-petclinic-angular
+    tag: 0.3.0
     pullPolicy: Always
   service:
     type: ClusterIP
@@ -70,4 +70,8 @@ spring_petclinic_frontend:
      requests:
        cpu: 100m
        memory: 50Mi        
-  replicaCount: 1   
+  replicaCount: 1
+
+ingress:
+  tls_host: af41297e3af6a478fb0a7c86fb08608f-1444351286.us-east-1.elb.amazonaws.com
+     

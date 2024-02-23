@@ -5235,7 +5235,7 @@ __webpack_require__.r(__webpack_exports__);
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 const environment = {
   production: false,
-  REST_API_URL: 'https://a4c3e1354b8c84877a692c035b94ca27-650553475.us-east-1.elb.amazonaws.com/petclinic/api/'
+  REST_API_URL: 'https://af41297e3af6a478fb0a7c86fb08608f-1444351286.us-east-1.elb.amazonaws.com/petclinic/api/'
 };
 
 /***/ }),
