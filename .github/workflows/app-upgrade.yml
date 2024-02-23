@@ -39,7 +39,7 @@ jobs:
 
     - name: Deploy Helm chart
       run: |
-        helm upgrade --install petclinic s3://cct21-spring-petclinic/spring-petclinic --values ./values.yaml --namespace=petclinic --create-namespace=true \
+        helm upgrade --install petclinic cct21-spring-petclinic/spring-petclinic --values ./values.yaml --namespace=petclinic --create-namespace=true \
         --set spring_petclinic_rest.extraEnv."spring\.datasource\.url"=${{ vars.EKS_SPRING_DATASOURCE }} \
         --set spring_petclinic_rest.extraEnv."spring\.datasource\.username"=${{ vars.DB_USER }} \
         --set spring_petclinic_rest.extraEnv."spring\.datasource\.password"=${{ secrets.DB_PASSWORD }} \
