@@ -48,22 +48,35 @@ jobs:
       with:
         cluster: ${{ vars.EKS_CLUSTER_NAME }}
 
-    - name: Deploy
-      uses: deliverybot/helm@v1
-      with:
-        release: petclinic
-        namespace: petclinic
-        chart: app
-        values: |
-          spring_petclinic_rest.extraEnv.spring.datasource.url: ${{ vars.EKS_SPRING_DATASOURCE }}
-          spring_petclinic_rest.extraEnv.spring.datasource.username: ${{ vars.DB_USER }}
-          spring_petclinic_rest.extraEnv.spring.datasource.password: ${{ secrets.DB_PASSWORD }}
-          ingress.tls_host: ${{ vars.INGRESS_HOST }}
-          ingress.tls_mail: ${{ vars.INGRESS_MAIL }}
-        value-files: >-
-          [
-            "values.yaml"
-          ]
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    - name: Deploy Helm chart
+      run: |
+        helm upgrade --install petclinic ./ --values ./values.yaml --namespace=petclinic --create-namespace=true \
+        --set spring_petclinic_rest.extraEnv.spring.datasource.url=${{ vars.EKS_SPRING_DATASOURCE }} \
+        --set spring_petclinic_rest.extraEnv.spring.datasource.username=${{ vars.DB_USER }} \
+        --set spring_petclinic_rest.extraEnv.spring.datasource.password=${{ secrets.DB_PASSWORD }} \
+        --set ingress.tls_host=${{ vars.INGRESS_HOST }} \
+        --set ingress.tls_mail=${{ vars.INGRESS_MAIL }}
+
+    # - name: Deploy
+    #   uses: deliverybot/helm@v1
+    #   with:
+    #     release: petclinic
+    #     namespace: petclinic
+    #     chart: app
+    #     values: |
+    #       spring_petclinic_rest.extraEnv.spring.datasource.url: ${{ vars.EKS_SPRING_DATASOURCE }}
+    #       spring_petclinic_rest.extraEnv.spring.datasource.username: ${{ vars.DB_USER }}
+    #       spring_petclinic_rest.extraEnv.spring.datasource.password: ${{ secrets.DB_PASSWORD }}
+    #       ingress.tls_host: ${{ vars.INGRESS_HOST }}
+    #       ingress.tls_mail: ${{ vars.INGRESS_MAIL }}
+    #     value-files: >-
+    #       [
+    #         "values.yaml"
+    #       ]
 
     # - name: Extract AWS credentials and configure AWS CLI
     #   run: |
