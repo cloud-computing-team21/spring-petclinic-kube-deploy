@@ -1,4 +1,4 @@
-name: Initialize RDS Instance and deploy Petclinic
+name: Initialize RDS Instance and deploy Petclinic for the first time
 
 on:
   workflow_dispatch:
