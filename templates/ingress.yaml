@@ -3,13 +3,13 @@ kind: Ingress
 metadata:
   name: petclinic-ingress
   namespace: {{.Release.Namespace}} 
-  #annotations:
-    #nginx.org/rewrites: "serviceName=spring-petclinic-frontend-service rewrite=/petclinic/"
-    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
   rules:
-  - http:
+  - host: {{ .Values.ingress.tls_host }}
+    http:
       paths:
       - path: /
         pathType: Prefix
@@ -28,4 +28,4 @@ spec:
   tls:
   - hosts:
     - {{ .Values.ingress.tls_host }}
-    secretName: petclinic-cert
+    secretName: letsencrypt-prod
