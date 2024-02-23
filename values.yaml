@@ -36,10 +36,10 @@ spring_petclinic_rest:
     failureThreshold: 3           
   resources:
     limits:
-      cpu: 500m
+      cpu: 1000m
     #   memory: 768Mi
     requests:
-      cpu: 100m
+      cpu: 300m
     #   memory: 256Mi
   extraEnv:        
     JAVA_OPTS: -Xmx512M
