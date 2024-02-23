@@ -35,18 +35,18 @@ spring_petclinic_rest:
     successThreshold: 1
     failureThreshold: 3           
   resources:
-     limits: {}
-    #   cpu: 1000m
+    limits:
+      cpu: 500m
     #   memory: 768Mi
-     requests: {}
-    #   cpu: 100m
+    requests:
+      cpu: 100m
     #   memory: 256Mi
   extraEnv:        
     JAVA_OPTS: -Xmx512M
     spring.profiles.active: postgresql,spring-data-jpa
-    spring.datasource.url: jdbc:postgresql://<<>>:5432/petclinic
-    spring.datasource.username: postgres
-    spring.datasource.password: <<>>
+    #spring.datasource.url: jdbc:postgresql://<<>>:5432/petclinic
+    #spring.datasource.username: postgres
+    #spring.datasource.password: <<>>
   replicaCount: 1 
 
 spring_petclinic_frontend:
