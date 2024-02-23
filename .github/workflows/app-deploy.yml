@@ -17,16 +17,16 @@ jobs:
 
     - name: Copy SQL files to Bastion Host
       run: |
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/1-createDB.sql ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }}:/tmp/
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/2-initDB.sql ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }}:/tmp/
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/3-populateDB.sql ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/1-createDB.sql ${{ vars.BASTION_USER }}@${{ vars.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/2-initDB.sql ${{ vars.BASTION_USER }}@${{ vars.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/3-populateDB.sql ${{ vars.BASTION_USER }}@${{ vars.BASTION_HOST }}:/tmp/
 
     - name: Execute SQL files on RDS through Bastion Host
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }} << EOF
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ env.RDS_HOST }} -p ${{ env.RDS_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -f /tmp/1-createDB.sql
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ env.RDS_HOST }} -p ${{ env.RDS_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -f /tmp/2-initDB.sql
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ env.RDS_HOST }} -p ${{ env.RDS_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -f /tmp/3-populateDB.sql
+        ssh -o StrictHostKeyChecking=no ${{ vars.BASTION_USER }}@${{ vars.BASTION_HOST }} << EOF
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ vars.RDS_HOST }} -p ${{ vars.RDS_PORT }} -U ${{ vars.DB_USER }} -d ${{ vars.DB_NAME }} -f /tmp/1-createDB.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ vars.RDS_HOST }} -p ${{ vars.RDS_PORT }} -U ${{ vars.DB_USER }} -d ${{ vars.DB_NAME }} -f /tmp/2-initDB.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ vars.RDS_HOST }} -p ${{ vars.RDS_PORT }} -U ${{ vars.DB_USER }} -d ${{ vars.DB_NAME }} -f /tmp/3-populateDB.sql
         EOF
   deploy-helm-chart:
     needs: setup-db
@@ -41,12 +41,12 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ vars.AWS_REGION }}
 
     - name: Configure Kubernetes client
       uses: silverlyra/setup-aws-eks@v0.1
       with:
-        cluster: ${{ env.EKS_CLUSTER_NAME }}
+        cluster: ${{ vars.EKS_CLUSTER_NAME }}
 
     - name: 'Deploy'
       uses: 'deliverybot/helm@v1'
@@ -55,11 +55,11 @@ jobs:
         namespace: 'petclinic'
         chart: 'app'
         values: |
-          spring_petclinic_rest.extraEnv.spring.datasource.url: ${{ env.EKS_SPRING_DATASOURCE }}
-          spring_petclinic_rest.extraEnv.spring.datasource.username: ${{ env.DB_USER }}
+          spring_petclinic_rest.extraEnv.spring.datasource.url: ${{ vars.EKS_SPRING_DATASOURCE }}
+          spring_petclinic_rest.extraEnv.spring.datasource.username: ${{ vars.DB_USER }}
           spring_petclinic_rest.extraEnv.spring.datasource.password: ${{ secrets.DB_PASSWORD }}
-          ingress.tls_host: ${{ env.INGRESS_HOST }}
-          ingress.tls_mail: ${{ env.INGRESS_MAIL }}
+          ingress.tls_host: ${{ vars.INGRESS_HOST }}
+          ingress.tls_mail: ${{ vars.INGRESS_MAIL }}
         value-files: >-
           [
             "values.yaml"
