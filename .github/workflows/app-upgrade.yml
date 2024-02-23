@@ -35,7 +35,7 @@ jobs:
     - name: Package release and push it
       run: |
         helm package .
-        helm s3 push ./spring-petclinic-0.1.0.tgz cct21-spring-petclinic
+        helm s3 push --force ./spring-petclinic-0.1.0.tgz cct21-spring-petclinic
 
     - name: Deploy Helm chart
       run: |
