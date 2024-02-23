@@ -1,4 +1,4 @@
-name: Initialize RDS Instance
+name: Initialize RDS Instance and deploy Petclinic
 
 on:
   workflow_dispatch:
@@ -55,9 +55,9 @@ jobs:
     - name: Deploy Helm chart
       run: |
         helm upgrade --install petclinic ./ --values ./values.yaml --namespace=petclinic --create-namespace=true \
-        --set spring_petclinic_rest.extraEnv."spring.datasource.url"=${{ vars.EKS_SPRING_DATASOURCE }} \
-        --set spring_petclinic_rest.extraEnv."spring.datasource.username"=${{ vars.DB_USER }} \
-        --set spring_petclinic_rest.extraEnv."spring.datasource.password"=${{ secrets.DB_PASSWORD }} \
+        --set spring_petclinic_rest.extraEnv.'spring.datasource.url'=${{ vars.EKS_SPRING_DATASOURCE }} \
+        --set spring_petclinic_rest.extraEnv.'spring.datasource.username'=${{ vars.DB_USER }} \
+        --set spring_petclinic_rest.extraEnv.'spring.datasource.password'=${{ secrets.DB_PASSWORD }} \
         --set ingress.tls_host=${{ vars.INGRESS_HOST }} \
         --set ingress.tls_mail=${{ vars.INGRESS_MAIL }}
 
