@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ template "app.spring_petclinic_frontend.name" .}}-configmap-main
-data:
-  main.js: |-
-{{ .Files.Get (printf "files/spring_petclinic_frontend/%s" .Values.spring_petclinic_frontend.config.main) | indent 4}}
-
- 
