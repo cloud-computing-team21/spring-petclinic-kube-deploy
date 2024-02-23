@@ -43,10 +43,10 @@ spring_petclinic_rest:
     #   memory: 256Mi
   extraEnv:        
     JAVA_OPTS: -Xmx512M
-    spring.profiles.active: hsqldb,spring-data-jpa
-    #spring.datasource.url: jdbc:postgresql://rds-master.croaguqyspld.us-east-1.rds.amazonaws.com:5432/petclinic
-    #spring.datasource.username: postgres
-    #spring.datasource.password: petclinic 
+    spring.profiles.active: postgresql,spring-data-jpa
+    spring.datasource.url: jdbc:postgresql://<<>>:5432/petclinic
+    spring.datasource.username: postgres
+    spring.datasource.password: <<>>
   replicaCount: 1 
 
 spring_petclinic_frontend:
@@ -73,5 +73,6 @@ spring_petclinic_frontend:
   replicaCount: 1
 
 ingress:
-  tls_host: af41297e3af6a478fb0a7c86fb08608f-1444351286.us-east-1.elb.amazonaws.com
+  tls_host: <<>>
+  tls_mail: example@example.com
      
