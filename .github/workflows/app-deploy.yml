@@ -17,16 +17,16 @@ jobs:
 
     - name: Copy SQL files to Bastion Host
       run: |
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/1-createDB.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/2-initDB.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
-        scp -o StrictHostKeyChecking=no ./middleware/bbdd/3-populateDB.sql ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/1-createDB.sql ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/2-initDB.sql ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no ./middleware/bbdd/3-populateDB.sql ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }}:/tmp/
 
     - name: Execute SQL files on RDS through Bastion Host
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }} << EOF
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/1-createDB.sql
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/2-initDB.sql
-        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ secrets.RDS_HOST }} -p ${{ secrets.RDS_PORT }} -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f /tmp/3-populateDB.sql
+        ssh -o StrictHostKeyChecking=no ${{ env.BASTION_USER }}@${{ env.BASTION_HOST }} << EOF
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ env.RDS_HOST }} -p ${{ env.RDS_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -f /tmp/1-createDB.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ env.RDS_HOST }} -p ${{ env.RDS_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -f /tmp/2-initDB.sql
+        PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h ${{ env.RDS_HOST }} -p ${{ env.RDS_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -f /tmp/3-populateDB.sql
         EOF
   deploy-helm-chart:
     needs: setup-db
@@ -35,38 +35,67 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
 
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ env.AWS_REGION }}
 
-    - name: Extract AWS credentials and configure AWS CLI
-      run: |
-        echo "${{ secrets.AWSCREDS }}" > awscreds.ini
-        export AWS_ACCESS_KEY_ID=$(grep 'aws_access_key_id' awscreds.ini | awk '{print $3}')
-        export AWS_SECRET_ACCESS_KEY=$(grep 'aws_secret_access_key' awscreds.ini | awk '{print $3}')
-        export AWS_SESSION_TOKEN=$(grep 'aws_session_token' awscreds.ini | awk '{print $3}')
-        export AWS_REGION=${{ secrets.AWSREGION }}
-        cat awscreds.ini
-        cat $AWS_ACCESS_KEY_ID
-        cat $AWS_REGION
-        cat ${{ secrets.AWSREGION }}
-        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-        aws configure set aws_session_token $AWS_SESSION_TOKEN
-        aws configure set region ${{ secrets.AWSREGION }}
+    - name: Configure Kubernetes client
+      uses: silverlyra/setup-aws-eks@v0.1
+      with:
+        cluster: ${{ env.EKS_CLUSTER_NAME }}
 
-    - name: Update kubeconfig
-      env:
-        AWS_ACCESS_KEY_ID: ${{ steps.extract-creds.outputs.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ steps.extract-creds.outputs.AWS_SECRET_ACCESS_KEY }}
-        AWS_SESSION_TOKEN: ${{ steps.extract-creds.outputs.AWS_SESSION_TOKEN }}
-        AWS_REGION: ${{ secrets.AWSREGION }}
-      run: |
-        aws eks update-kubeconfig --name your-cluster-name --region $AWS_REGION
-        aws eks update-kubeconfig --name ${{ secrets.EKSCLUSTERNAME }} --region ${{ secrets.AWSREGION }}
+    - name: 'Deploy'
+      uses: 'deliverybot/helm@v1'
+      with:
+        release: 'petclinic'
+        namespace: 'petclinic'
+        chart: 'app'
+        values: |
+          spring_petclinic_rest.extraEnv.spring.datasource.url: ${{ env.EKS_SPRING_DATASOURCE }}
+          spring_petclinic_rest.extraEnv.spring.datasource.username: ${{ env.DB_USER }}
+          spring_petclinic_rest.extraEnv.spring.datasource.password: ${{ secrets.DB_PASSWORD }}
+          ingress.tls_host: ${{ env.INGRESS_HOST }}
+          ingress.tls_mail: ${{ env.INGRESS_MAIL }}
+        value-files: >-
+          [
+            "values.yaml"
+          ]
+
+    # - name: Extract AWS credentials and configure AWS CLI
+    #   run: |
+    #     echo "${{ secrets.AWSCREDS }}" > awscreds.ini
+    #     export AWS_ACCESS_KEY_ID=$(grep 'aws_access_key_id' awscreds.ini | awk '{print $3}')
+    #     export AWS_SECRET_ACCESS_KEY=$(grep 'aws_secret_access_key' awscreds.ini | awk '{print $3}')
+    #     export AWS_SESSION_TOKEN=$(grep 'aws_session_token' awscreds.ini | awk '{print $3}')
+    #     export AWS_REGION=${{ secrets.AWSREGION }}
+    #     cat awscreds.ini
+    #     cat $AWS_ACCESS_KEY_ID
+    #     cat $AWS_REGION
+    #     cat ${{ secrets.AWSREGION }}
+    #     aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    #     aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    #     aws configure set aws_session_token $AWS_SESSION_TOKEN
+    #     aws configure set region ${{ secrets.AWSREGION }}
+
+    # - name: Update kubeconfig
+    #   env:
+    #     AWS_ACCESS_KEY_ID: ${{ steps.extract-creds.outputs.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY: ${{ steps.extract-creds.outputs.AWS_SECRET_ACCESS_KEY }}
+    #     AWS_SESSION_TOKEN: ${{ steps.extract-creds.outputs.AWS_SESSION_TOKEN }}
+    #     AWS_REGION: ${{ secrets.AWSREGION }}
+    #   run: |
+    #     aws eks update-kubeconfig --name your-cluster-name --region $AWS_REGION
+    #     aws eks update-kubeconfig --name ${{ secrets.EKSCLUSTERNAME }} --region ${{ secrets.AWSREGION }}
 
 
-    - name: Install Helm
-      run: |
-        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+    # - name: Install Helm
+    #   run: |
+    #     curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-    - name: Deploy Helm chart
-      run: |
-        helm upgrade --install petclinic ./ --values ./values.yaml
+    # - name: Deploy Helm chart
+    #   run: |
+    #     helm upgrade --install petclinic ./ --values ./values.yaml
