@@ -1,0 +1,14 @@
+m apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: petclinic
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    namespace: petclinic
+    name: in-cluster
+  source:
+    repoURL: http://cct21-spring-petclinic.s3-website-us-east-1.amazonaws.com
+    targetRevision: "0.1.0"
+    chart: spring-petclinic
