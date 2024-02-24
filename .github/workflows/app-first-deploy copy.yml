@@ -60,3 +60,12 @@ jobs:
         --set spring_petclinic_rest.extraEnv."spring\.datasource\.password"=${{ secrets.DB_PASSWORD }} \
         --set ingress.tls_host=${{ vars.INGRESS_HOST }} \
         --set ingress.tls_mail=${{ vars.INGRESS_MAIL }}
+
+        
+    - name: Run chart-releaser
+      uses: helm/chart-releaser-action@v1.6.0
+      env:
+        CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      with:
+        charts_dir: /
+        
