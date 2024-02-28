@@ -27,18 +27,14 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-    - name: Install S3 plugin and add repo
-      run: |
-        helm plugin install https://github.com/hypnoglow/helm-s3.git
-        helm repo add cct21-spring-petclinic s3://cct21-spring-petclinic
-  
-    - name: Package release and push it
-      run: |
-        helm package .
-        helm s3 push --force ./spring-petclinic-0.1.0.tgz cct21-spring-petclinic
+    - name: Run chart-releaser
+      uses: helm/chart-releaser-action@v1.6.0
+      env:
+        CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
     - name: Deploy Helm chart
       run: |
+        helm repo add cct21-spring-petclinic https://cloud-computing-team21.github.io/spring-petclinic-kube-deploy
         helm upgrade --install petclinic cct21-spring-petclinic/spring-petclinic --values ./values.yaml --namespace=petclinic --create-namespace=true \
         --set spring_petclinic_rest.extraEnv."spring\.datasource\.url"=${{ vars.EKS_SPRING_DATASOURCE }} \
         --set spring_petclinic_rest.extraEnv."spring\.datasource\.username"=${{ vars.DB_USER }} \
