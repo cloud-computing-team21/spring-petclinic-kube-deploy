@@ -75,4 +75,7 @@ spring_petclinic_frontend:
 ingress:
   tls_host: <<>>
   tls_mail: example@example.com
+
+argocd:
+  chartVersion: "0.1.4"
      
